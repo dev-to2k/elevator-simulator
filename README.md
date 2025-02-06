@@ -1,40 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Mô phỏng Thang máy
 
-## Getting Started
+## Giới thiệu
 
-First, run the development server:
+**Mô phỏng Thang máy** là một dự án **Next.js** được thiết kế để mô phỏng hoạt động của thang máy với giao diện người dùng thời gian thực. Dự án sử dụng **Tailwind CSS** để tạo kiểu dáng và cung cấp các tuyến API cùng hệ thống cập nhật trạng thái dựa trên **WebSocket**.
 
-```bash
+## Yêu cầu hệ thống
+
+Hãy đảm bảo bạn đã cài đặt các công cụ sau:
+
+- [Node.js](https://nodejs.org/) (phiên bản 14 trở lên)
+- npm (được tích hợp sẵn với Node.js) hoặc [Yarn](https://yarnpkg.com/)
+
+## Cài đặt
+
+1. Clone repository:
+
+   ```sh
+   git clone <repository-url>
+   cd elevator-simulator
+   ```
+
+2. Cài đặt các thư viện phụ thuộc:
+   ```sh
+   npm install
+   ```
+   hoặc nếu sử dụng Yarn:
+   ```sh
+   yarn install
+   ```
+
+## Phát triển
+
+Để chạy dự án trong **chế độ phát triển** với tính năng tải lại tự động:
+
+```sh
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Truy cập [http://localhost:3000](http://localhost:3000) trên trình duyệt để xem ứng dụng.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Kiểm tra API
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+Dự án bao gồm một tuyến API mẫu trong `src/pages/api/hello.ts` để thử nghiệm.
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## Xây dựng và triển khai
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Để biên dịch dự án cho môi trường sản xuất, chạy lệnh sau:
 
-## Learn More
+```sh
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Sau đó, khởi động máy chủ sản xuất với:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
+```sh
+npm run start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Kiểm tra mã nguồn
 
-## Deploy on Vercel
+Để chạy ESLint và kiểm tra lỗi trong mã nguồn:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```sh
+npm run lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Cấu trúc dự án
+
+```
+elevator-simulator/
+├── src/
+│   ├── pages/                   # Chứa các trang Next.js, bao gồm các tuyến API
+│   ├── components/
+│   │   └── ElevatorSystem.tsx    # Chứa logic mô phỏng thang máy chính
+│   ├── styles/                   # Chứa các kiểu CSS toàn cục sử dụng Tailwind CSS
+├── postcss.config.mjs             # Cấu hình PostCSS với Tailwind CSS
+├── tailwind.config.ts             # Tệp cấu hình Tailwind CSS
+├── next.config.ts                 # Tệp cấu hình Next.js
+└── README.md                      # Tài liệu hướng dẫn dự án
+```
+
+## Thông tin bổ sung
+
+- Dự án sử dụng **WebSocket** để cập nhật trạng thái trực tiếp, kết nối đến `http://localhost:5000`.
+- Bạn có thể chỉnh sửa `next.config.ts` để tùy chỉnh cấu hình Next.js.
+
+---
+
+Chúc bạn lập trình vui vẻ! 🚀
