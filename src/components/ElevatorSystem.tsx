@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 const floors: number[] = Array.from({ length: 10 }, (_, i) => 10 - i);
 
@@ -19,11 +20,51 @@ interface ElevatorResponse {
   elevators: Elevator[];
 }
 
+// Define WebSocket status types
+type WebSocketStatus =
+  | "LOADING"
+  | "CONNECTING"
+  | "CONNECTED"
+  | "DISCONNECTED"
+  | "ERROR";
+
 export default function ElevatorSystem() {
-  const [wsConnected, setWsConnected] = useState<boolean>(false);
+  const [wsStatus, setWsStatus] = useState<WebSocketStatus>("LOADING");
+  const [wsError, setWsError] = useState<string | null>(null);
   const [currentElevators, setCurrentElevators] = useState<Elevator[]>([]);
   const [activeButtons, setActiveButtons] = useState<ActiveButtons>({});
-  const [error, setError] = useState<string | null>(null);
+
+  const getStatusColor = () => {
+    switch (wsStatus) {
+      case "LOADING":
+      case "CONNECTING":
+        return "text-yellow-600";
+      case "CONNECTED":
+        return "text-green-600";
+      case "DISCONNECTED":
+      case "ERROR":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getStatusText = () => {
+    switch (wsStatus) {
+      case "LOADING":
+        return "Loading...";
+      case "CONNECTING":
+        return "Connecting...";
+      case "CONNECTED":
+        return "Connected";
+      case "DISCONNECTED":
+        return "Disconnected";
+      case "ERROR":
+        return `Error: ${wsError || "Unknown error"}`;
+      default:
+        return "Unknown Status";
+    }
+  };
 
   const callElevator = async (
     columnIndex: number,
@@ -67,34 +108,37 @@ export default function ElevatorSystem() {
     };
 
     fetchElevators();
+  }, []);
 
-    const socket = new WebSocket(`${process.env.NEXT_PUBLIC_URL_API}`);
+  useEffect(() => {
+    setWsStatus("CONNECTING");
 
-    socket.onopen = () => {
-      console.log("WebSocket connected.");
-      setWsConnected(true);
-    };
+    const socketIo = io(`${process.env.NEXT_PUBLIC_URL_API}`);
 
-    socket.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === "STATUS_UPDATE" && data.data) {
-          setCurrentElevators(data.data);
-        }
-      } catch (err) {
-        console.error("Error parsing WebSocket message:", err);
-      }
-    };
-    socket.onerror = (err) => {
-      console.error("WebSocket error:", err);
-      setError("WebSocket connection error.");
-    };
-    socket.onclose = () => {
-      console.log("WebSocket disconnected.");
-      setWsConnected(false);
-    };
+    socketIo.on("connect", () => {
+      console.log("Socket.IO connected.");
+      setWsStatus("CONNECTED");
+    });
+
+    socketIo.on("STATUS_UPDATE", (data: Elevator[]) => {
+      console.log("Received STATUS_UPDATE:", data);
+      setCurrentElevators(data);
+    });
+
+    socketIo.on("disconnect", () => {
+      console.log("Socket.IO disconnected.");
+      setWsStatus("DISCONNECTED");
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    socketIo.on("error", (err: any) => {
+      console.error("Socket.IO error:", err);
+      setWsStatus("ERROR");
+      setWsError("Socket.IO connection error.");
+    });
+
     return () => {
-      socket.close();
+      socketIo.disconnect();
     };
   }, []);
 
@@ -116,20 +160,17 @@ export default function ElevatorSystem() {
     });
   }, [currentElevators, activeButtons]);
 
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
+  if (wsError) {
+    return <div className="text-red-500">{wsError}</div>;
   }
 
   return (
     <div className="flex flex-col items-center mt-10">
       <h1 className="text-3xl font-bold mb-4">Elevator Simulator</h1>
-      <p>
-        WebSocket:{" "}
-        <span className={wsConnected ? "text-green-600" : "text-red-600"}>
-          {wsConnected ? "Connected" : "Disconnected"}
-        </span>
+      <p className="mb-4">
+        WebSocket: <span className={getStatusColor()}>{getStatusText()}</span>
       </p>
-      <div className="flex gap-6 mt-4">
+      <div className="flex gap-6 mt-4 mb-10">
         {currentElevators.map((_, columnIndex) => (
           <div key={columnIndex} className="flex flex-col gap-2">
             {floors.map((floor: number) => (
